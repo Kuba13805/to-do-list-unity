@@ -41,11 +41,11 @@ namespace UI
 
         #endregion
 
-        public void SetQuest(Quest quest)
+        public void SetQuest(Quest newQuest)
         {
             removeQuestButton.SetActive(false);
-            this.quest = quest;
-            questTitleBox.text = quest.QuestTitle;
+            quest = newQuest;
+            questTitleBox.text = newQuest.QuestTitle;
             questIcon.sprite = toDoQuestIcon;
             RebuildLayout();
         }

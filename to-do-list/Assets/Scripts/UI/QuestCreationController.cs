@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using TMPro;
 using UnityEngine;
+using UnityEngine.UI;
 
 namespace UI
 {
@@ -27,10 +28,20 @@ namespace UI
         private void Start()
         {
             questCreationPanel.SetActive(false);
-            UIController.OnRequestQuestCreationPanel += ShowQuestCreationPanel;
+            SubscribeToEvents();
         }
 
         private void OnDestroy()
+        {
+            UnsubscribeFromEvents();
+        }
+
+        private void SubscribeToEvents()
+        {
+            UIController.OnRequestQuestCreationPanel += ShowQuestCreationPanel;
+        }
+
+        private void UnsubscribeFromEvents()
         {
             UIController.OnRequestQuestCreationPanel -= ShowQuestCreationPanel;
         }
@@ -39,20 +50,21 @@ namespace UI
         {
             questCreationPanel.SetActive(true);
         }
-        
+
         public void ConfirmQuestCreation()
         {
-            if (string.IsNullOrEmpty(questNameInput.text))
+            if (string.IsNullOrEmpty(questNameInput.text) || string.IsNullOrWhiteSpace(questNameInput.text))
             {
-                StartCoroutine(RequestInputFieldFilling(questNameInput));
+                StartCoroutine(FlashInputField(questNameInput));
                 return;
             }
 
-            if (string.IsNullOrEmpty(questDescriptionInput.text))
+            if (string.IsNullOrEmpty(questDescriptionInput.text) || string.IsNullOrWhiteSpace(questDescriptionInput.text))
             {
-                StartCoroutine(RequestInputFieldFilling(questDescriptionInput));
+                StartCoroutine(FlashInputField(questDescriptionInput));
                 return;
             }
+
             OnConfirmedQuestCreation?.Invoke(questNameInput.text, questDescriptionInput.text);
             ClearQuestCreation();
         }
@@ -61,6 +73,7 @@ namespace UI
         {
             ClearQuestCreation();
         }
+
         private void ClearQuestCreation()
         {
             questCreationPanel.SetActive(false);
@@ -68,27 +81,23 @@ namespace UI
             questDescriptionInput.text = "";
         }
 
-        private IEnumerator RequestInputFieldFilling(TMP_InputField inputField)
+        private IEnumerator FlashInputField(Selectable inputField)
         {
-            float elapsedTime = 0f;
-            Color originalColor = inputField.colors.normalColor;
+            var halfWarningTime = warningTime / 2f;
+            var originalColor = inputField.colors.normalColor;
 
-            while (elapsedTime < warningTime / 2)
+            yield return LerpInputFieldColor(inputField, originalColor, warningColor, halfWarningTime);
+            yield return LerpInputFieldColor(inputField, warningColor, originalColor, halfWarningTime);
+        }
+
+        private IEnumerator LerpInputFieldColor(Selectable inputField, Color fromColor, Color toColor, float duration)
+        {
+            var elapsedTime = 0f;
+            while (elapsedTime < duration)
             {
                 elapsedTime += Time.deltaTime;
                 var inputFieldColors = inputField.colors;
-                inputFieldColors.normalColor = Color.Lerp(originalColor, warningColor, elapsedTime / (warningTime / 2));
-                inputField.colors = inputFieldColors;
-                yield return null;
-            }
-            
-            elapsedTime = 0f;
-            
-            while (elapsedTime < warningTime / 2)
-            {
-                elapsedTime += Time.deltaTime;
-                var inputFieldColors = inputField.colors;
-                inputFieldColors.normalColor = Color.Lerp(warningColor, originalColor, elapsedTime / (warningTime / 2));
+                inputFieldColors.normalColor = Color.Lerp(fromColor, toColor, elapsedTime / duration);
                 inputField.colors = inputFieldColors;
                 yield return null;
             }

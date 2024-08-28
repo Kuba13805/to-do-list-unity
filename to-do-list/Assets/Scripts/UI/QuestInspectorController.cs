@@ -15,8 +15,8 @@ namespace UI
     
         [SerializeField] private GameObject questPrefab;
         
-        private List<QuestPrompt> _toDoQuestList = new();
-        private List<QuestPrompt> _completedQuestList = new();
+        private readonly List<QuestPrompt> _toDoQuestList = new();
+        private readonly List<QuestPrompt> _completedQuestList = new();
 
         #endregion
 
@@ -33,6 +33,11 @@ namespace UI
             SubscribeToEvents();
         }
 
+        private void OnDestroy()
+        {
+            UnsubscribeFromEvents();
+        }
+
         private void SubscribeToEvents()
         {
             UIController.OnQuestAdded += AddQuest;
@@ -44,62 +49,72 @@ namespace UI
             QuestPrompt.OnQuestMarkedAsToDo += MarkQuestAsToDoFromPrompt;
         }
 
-        private void OnDestroy()
-        {
-            UnsubscribeFromEvents();
-        }
-
         private void UnsubscribeFromEvents()
         {
             UIController.OnQuestAdded -= AddQuest;
             UIController.OnQuestRemoved -= RemoveQuest;
-            UIController.OnPassSearchedQuestIDsList += DisplaySearchedQuests;
+            UIController.OnPassSearchedQuestIDsList -= DisplaySearchedQuests;
             UIController.OnSearchQuestCleared -= DisplayAllQuests;
             QuestPrompt.OnRemoveQuestButtonClicked -= RemoveQuestFromPrompt;
             QuestPrompt.OnQuestMarkedAsCompleted -= CompleteQuestFromPrompt;
             QuestPrompt.OnQuestMarkedAsToDo -= MarkQuestAsToDoFromPrompt;
         }
 
-
         private void AddQuest(Quest quest)
         {
             var questObject = Instantiate(questPrefab, toDoQuestsPanel);
-
-            questObject.GetComponent<QuestPrompt>().SetQuest(quest);
-
-            _toDoQuestList.Add(questObject.GetComponent<QuestPrompt>());
+            var questPrompt = questObject.GetComponent<QuestPrompt>();
+            questPrompt.SetQuest(quest);
+            _toDoQuestList.Add(questPrompt);
         }
 
         private void RemoveQuest(Quest quest)
         {
-            SearchForQuestAndRemoveFromInspector(quest);
+            RemoveQuestFromList(quest, _toDoQuestList);
+            RemoveQuestFromList(quest, _completedQuestList);
         }
 
-        private void SearchForQuestAndRemoveFromInspector(Quest quest)
+        private static void RemoveQuestFromList(Quest quest, List<QuestPrompt> questList)
         {
-            _toDoQuestList.Remove(SearchForQuestInInspector(quest, _toDoQuestList));
-            _completedQuestList.Remove(SearchForQuestInInspector(quest, _completedQuestList));
+            var questPrompt = questList.FirstOrDefault(q => q.quest.QuestID == quest.QuestID);
+            if (questPrompt == null) return;
+            questList.Remove(questPrompt);
+            Destroy(questPrompt.gameObject);
         }
+
         private void DisplayAllQuests()
         {
-            foreach (var questPrompt in _toDoQuestList) questPrompt.gameObject.SetActive(true);
-            foreach (var questPrompt in _completedQuestList) questPrompt.gameObject.SetActive(true);
+            SetQuestPromptsActive(_toDoQuestList, true);
+            SetQuestPromptsActive(_completedQuestList, true);
         }
-        private void DisplaySearchedQuests(List<int> iDsList)
+
+        private void DisplaySearchedQuests(List<int> questIDsList)
         {
             DisplayAllQuests();
-            foreach (var questPrompt in _toDoQuestList.Where(questPrompt => !iDsList.Contains(questPrompt.quest.QuestID))) questPrompt.gameObject.SetActive(false);
-            foreach (var questPrompt in _completedQuestList.Where(questPrompt => !iDsList.Contains(questPrompt.quest.QuestID))) questPrompt.gameObject.SetActive(false);
+            SetQuestPromptsActive(_toDoQuestList, questIDsList);
+            SetQuestPromptsActive(_completedQuestList, questIDsList);
         }
+
+        private static void SetQuestPromptsActive(List<QuestPrompt> questList, bool isActive)
+        {
+            foreach (var questPrompt in questList)
+            {
+                questPrompt.gameObject.SetActive(isActive);
+            }
+        }
+
+        private static void SetQuestPromptsActive(List<QuestPrompt> questList, List<int> questIDsList)
+        {
+            foreach (var questPrompt in questList)
+            {
+                questPrompt.gameObject.SetActive(questIDsList.Contains(questPrompt.quest.QuestID));
+            }
+        }
+
         private static void MarkQuestAsToDoFromPrompt(Quest quest) => OnQuestMarkedAsToDoFromPrompt?.Invoke(quest);
 
         private static void CompleteQuestFromPrompt(Quest quest) => OnQuestMarkedAsCompletedFromPrompt?.Invoke(quest);
 
         private static void RemoveQuestFromPrompt(Quest quest) => OnQuestRemovedFromPrompt?.Invoke(quest);
-
-        private static QuestPrompt SearchForQuestInInspector(Quest quest, IEnumerable<QuestPrompt> listOfPrompts)
-        {
-            return listOfPrompts.FirstOrDefault(questPrompt => questPrompt.quest.QuestID == quest.QuestID);
-        }
     }
 }

@@ -61,10 +61,14 @@ namespace UI
             
             if (!IsPointerOverDropZone(eventData))
             {
-                _rectTransform.SetParent(_originalParent);
-                _rectTransform.anchoredPosition = _startPosition;
+                ResetPosition();
             }
             OnDragEnd?.Invoke();
+        }
+        private void ResetPosition()
+        {
+            _rectTransform.SetParent(_originalParent);
+            _rectTransform.anchoredPosition = _startPosition;
         }
         private static bool IsPointerOverDropZone(PointerEventData eventData)
         {
