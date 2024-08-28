@@ -37,7 +37,6 @@ namespace UI
         {
             UIController.OnQuestAdded += AddQuest;
             UIController.OnQuestRemoved += RemoveQuest;
-            UIController.OnQuestCompleted += CompleteQuest;
             UIController.OnPassSearchedQuestIDsList += DisplaySearchedQuests;
             UIController.OnSearchQuestCleared += DisplayAllQuests;
             QuestPrompt.OnRemoveQuestButtonClicked += RemoveQuestFromPrompt;
@@ -54,7 +53,6 @@ namespace UI
         {
             UIController.OnQuestAdded -= AddQuest;
             UIController.OnQuestRemoved -= RemoveQuest;
-            UIController.OnQuestCompleted -= CompleteQuest;
             UIController.OnPassSearchedQuestIDsList += DisplaySearchedQuests;
             UIController.OnSearchQuestCleared -= DisplayAllQuests;
             QuestPrompt.OnRemoveQuestButtonClicked -= RemoveQuestFromPrompt;
@@ -81,11 +79,6 @@ namespace UI
         {
             _toDoQuestList.Remove(SearchForQuestInInspector(quest, _toDoQuestList));
             _completedQuestList.Remove(SearchForQuestInInspector(quest, _completedQuestList));
-        }
-        private void CompleteQuest(Quest quest)
-        {
-            _completedQuestList.Add(SearchForQuestInInspector(quest, _toDoQuestList));
-            _toDoQuestList.Remove(SearchForQuestInInspector(quest, _toDoQuestList));
         }
         private void DisplayAllQuests()
         {

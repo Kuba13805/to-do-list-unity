@@ -14,6 +14,9 @@ namespace UI
         private Vector2 _startPosition;
 
         #endregion
+        
+        public static event Action OnDragStart;
+        public static event Action OnDragEnd;
 
         private void Awake()
         {
@@ -21,13 +24,30 @@ namespace UI
             _canvasGroup = GetComponent<CanvasGroup>();
         }
 
+        private void Start()
+        {
+            OnDragStart += SwitchRaycastBlocks;
+            OnDragEnd += SwitchRaycastBlocks;
+        }
+
+        private void OnDestroy()
+        {
+            OnDragStart -= SwitchRaycastBlocks;
+            OnDragEnd -= SwitchRaycastBlocks;
+        }
+
+        private void SwitchRaycastBlocks()
+        {
+            _canvasGroup.blocksRaycasts = !_canvasGroup.blocksRaycasts;
+        }
+
         public void OnBeginDrag(PointerEventData eventData)
         {
             _startPosition = _rectTransform.anchoredPosition;
             _canvasGroup.alpha = 0.6f;
-            _canvasGroup.blocksRaycasts = false;
             _originalParent = _rectTransform.parent;
             _rectTransform.SetParent(_originalParent.parent.root);
+            OnDragStart?.Invoke();
         }
 
         public void OnDrag(PointerEventData eventData)
@@ -38,13 +58,13 @@ namespace UI
         public void OnEndDrag(PointerEventData eventData)
         {
             _canvasGroup.alpha = 1f;
-            _canvasGroup.blocksRaycasts = true;
             
             if (!IsPointerOverDropZone(eventData))
             {
                 _rectTransform.SetParent(_originalParent);
                 _rectTransform.anchoredPosition = _startPosition;
             }
+            OnDragEnd?.Invoke();
         }
         private static bool IsPointerOverDropZone(PointerEventData eventData)
         {

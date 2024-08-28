@@ -13,7 +13,6 @@ namespace UI
         public static event Action<string, string> OnConfirmedQuestCreation;
         public static event Action<Quest> OnQuestAdded;
         public static event Action<Quest> OnQuestRemoved;
-        public static event Action<Quest> OnQuestCompleted;
         public static event Action<Quest> OnMarkQuestAsToDo;
         public static event Action<Quest> OnMarkQuestAsCompleted;
         public static event Action<Quest> OnMarkQuestAsToBeRemoved;
@@ -32,7 +31,6 @@ namespace UI
             QuestCreationController.OnConfirmedQuestCreation += AddQuestFromCreationPanel;
             QuestManager.OnQuestAdded += AddQuest;
             QuestManager.OnQuestRemoved += RemoveQuestFromInspector;
-            QuestManager.OnQuestCompleted += AddCompletedQuestToInspector;
             QuestManager.OnPassQuestList += PassQuestList;
             QuestInspectorController.OnQuestRemovedFromPrompt += MarkQuestAsToBeRemovedFromInspector;
             QuestInspectorController.OnQuestMarkedAsCompletedFromPrompt += MarkQuestAsCompletedFromInspector;
@@ -50,7 +48,6 @@ namespace UI
             QuestCreationController.OnConfirmedQuestCreation -= AddQuestFromCreationPanel;
             QuestManager.OnQuestAdded -= AddQuest;
             QuestManager.OnQuestRemoved -= RemoveQuestFromInspector;
-            QuestManager.OnQuestCompleted -= AddCompletedQuestToInspector;
             QuestManager.OnPassQuestList -= PassQuestList;
             QuestInspectorController.OnQuestRemovedFromPrompt -= MarkQuestAsToBeRemovedFromInspector;
             QuestInspectorController.OnQuestMarkedAsCompletedFromPrompt -= MarkQuestAsCompletedFromInspector;
@@ -66,7 +63,6 @@ namespace UI
         private static void MarkQuestAsCompletedFromInspector(Quest quest) => OnMarkQuestAsCompleted?.Invoke(quest);
         private static void AddQuest(Quest quest) => OnQuestAdded?.Invoke(quest);
         private static void RemoveQuestFromInspector(Quest quest) => OnQuestRemoved?.Invoke(quest);
-        private static void AddCompletedQuestToInspector(Quest quest) => OnQuestCompleted?.Invoke(quest);
         private static void AddQuestFromCreationPanel(string title, string desc) => OnConfirmedQuestCreation?.Invoke(title, desc);
         private static void RequestQuestList() => OnRequestQuestList?.Invoke();
         private static void PassQuestList(List<Quest> quests) => OnPassQuestList?.Invoke(quests);

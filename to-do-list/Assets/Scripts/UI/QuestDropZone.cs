@@ -1,4 +1,3 @@
-using System;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
@@ -8,6 +7,7 @@ namespace UI
     public class QuestDropZone : MonoBehaviour, IDropHandler
     {
         private Transform _content;
+        [SerializeField] private bool setQuestAsCompleted;
 
         private void Start()
         {
@@ -21,12 +21,12 @@ namespace UI
             
             questPrompt.GetComponent<Transform>().SetParent(_content);
             
-            switch (questPrompt.quest.IsQuestCompleted)
+            switch (setQuestAsCompleted)
             {
-                case false:
+                case true:
                     questPrompt.MarkQuestAsCompleted();
                     break;
-                case true:
+                case false:
                     questPrompt.MarkQuestAsToDo();
                     break;
             }

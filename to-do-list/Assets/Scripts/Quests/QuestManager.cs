@@ -22,7 +22,6 @@ namespace Quests
 
         public static event Action<Quest> OnQuestAdded;
         public static event Action<Quest> OnQuestRemoved;
-        public static event Action<Quest> OnQuestCompleted;
         public static event Action<List<Quest>> OnPassQuestList; 
 
         #endregion
@@ -36,7 +35,6 @@ namespace Quests
         private void SubscribeToEvents()
         {
             UIController.OnConfirmedQuestCreation += AddQuest;
-            UIController.OnQuestCompleted += CompleteQuest;
             UIController.OnMarkQuestAsToDo += MarkQuestAsToDo;
             UIController.OnMarkQuestAsCompleted += MarkQuestAsCompleted;
             UIController.OnMarkQuestAsToBeRemoved += RemoveQuest;
@@ -51,7 +49,6 @@ namespace Quests
         private void UnsubscribeFromEvents()
         {
             UIController.OnConfirmedQuestCreation -= AddQuest;
-            UIController.OnQuestCompleted -= CompleteQuest;
             UIController.OnMarkQuestAsToDo -= MarkQuestAsToDo;
             UIController.OnMarkQuestAsCompleted -= MarkQuestAsCompleted;
             UIController.OnMarkQuestAsToBeRemoved -= RemoveQuest;
@@ -129,14 +126,6 @@ namespace Quests
                 ReleaseQuestId(quest.QuestID);
                 break;
             }
-        }
-
-        private void CompleteQuest(Quest quest)
-        {
-            _completedQuestList.Add(quest);
-            _toDoQuestList.Remove(quest);
-            quest.IsQuestCompleted = true;
-            OnQuestCompleted?.Invoke(quest);
         }
     }
 }
